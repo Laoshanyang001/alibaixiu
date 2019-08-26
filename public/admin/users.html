@@ -1,3 +1,9 @@
+<script src="/login/status"></script>
+<script>
+  if(!isLogin) {
+    location.href="/admin/login.html";
+  }
+</script>
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -150,6 +156,7 @@
   <script src="../assets/vendors/jquery/jquery.js"></script>
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
   <script src="../assets/vendors/art-template/template-web.js"></script>
+  <script src="../assets/js/common.js"></script>
   <script type="text/html" id="userListTpl">
     {{each users}}
     <tr>
@@ -361,23 +368,23 @@
     $("#batchDelUser").on("click",function(){
       let isConfirm=confirm("您确定删除这些用户！");
       if(isConfirm) {
-
+        let ids=[];
+        $.each($(".deleteChecked:checked"),function(i,item) {
+          ids.push($(item).attr("data-id"));
+        });
+        $.ajax({
+          type:"delete",
+          url:"/users/"+ids.join("-"),
+          success(data) {
+            users=users.filter(item=>!ids.includes(item._id));
+            render();
+            $("#batchDelUser").hide();
+          },
+          error() {
+            alert("用户删除失败！");
+          }
+        });
       }
-      let ids=[];
-      $.each($(".deleteChecked:checked"),function(i,item) {
-        ids.push($(item).attr("data-id"));
-      });
-      $.ajax({
-        type:"delete",
-        url:"/users/"+ids.join("-"),
-        success(data) {
-          users=users.filter(item=>!ids.includes(item._id));
-          render();
-        },
-        error() {
-          alert("用户删除失败！");
-        }
-      });
     });
 
     //编辑修改用户
