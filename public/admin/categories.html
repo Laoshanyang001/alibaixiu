@@ -60,14 +60,14 @@
           </form>
         </div>
         <div class="col-md-8">
-          <!-- <div class="page-action">
-            <a class="btn btn-danger btn-sm" href="javascript:;">批量删除</a>
-          </div> -->
+          <div class="page-action">
+            <a id="batchDelete" class="btn btn-danger btn-sm" href="javascript:;" style="display:none">批量删除</a>
+          </div>
           <table class="table table-striped table-bordered table-hover">
             <thead>
               <tr>
                 <th class="text-center" width="40">
-                  <input type="checkbox" />
+                  <input id="checkedAll" type="checkbox" />
                 </th>
                 <th>名称</th>
                 <th class="text-center" width="100">操作</th>
@@ -123,7 +123,7 @@
   <script type="text/html" id="categoriesTpl">
     {{each categories}}
     <tr>
-      <td class="text-center"><input type="checkbox"></td>
+      <td class="text-center"><input data-id="{{@$value._id}}" class="deleteChecked" type="checkbox"></td>
       <td>{{$value.title}}</td>
       <td class="text-center">
         <a href="javascript:;" id="categoryModify" data-id="{{@$value._id}}" class="btn btn-info btn-xs">编辑</a>
@@ -238,6 +238,69 @@
       });
       return false;
     });
+
+    //删除分类
+    $(".container-fluid tbody").on("click", "#categoryDelete", function () {
+      let isConfirm=confirm("您确定删除该分类？");
+      if(isConfirm) {
+        let id = $(this).attr("data-id");
+        $.ajax({
+          type: "delete",
+          url: "/categories/" + id,
+          success(data) {
+            categories=categories.filter(item=>item._id!==id);
+            render();
+          },
+          error() {
+            alert("分类删除失败！")
+          }
+        });
+      }
+    });
+    //批量删除分类
+    $(".container-fluid tbody").on("change", ".deleteChecked", function () {
+      if($(".deleteChecked:checked").length>0) {
+        $("#batchDelete").show();
+      }else {
+        $("#batchDelete").hide();
+      }
+      if($(".deleteChecked:checked").length==$(".deleteChecked").length) {
+        $("#checkedAll").prop("checked",true);
+      }else {
+        $("#checkedAll").prop("checked",false);
+      }
+    });
+    $("#checkedAll").on("change",function() {
+      if($(this).prop("checked")) {
+        $(".deleteChecked").prop("checked",true);
+        $("#batchDelete").show();
+      }else {
+        $(".deleteChecked").prop("checked",false);
+        $("#batchDelete").hide();
+      }
+    });
+    $("#batchDelete").on("click",function() {
+      let isConfirm=confirm("您确定删除这些分类？");
+      if(isConfirm) {
+        let ids=[];
+        $.each($(".deleteChecked:checked"),function(i,item){
+          ids.push($(item).attr("data-id"));
+        });
+        $.ajax({  
+          type:"delete",
+          url:"/categories/"+ids.join("-"),
+          success(data) {
+            categories=categories.filter(item=>!ids.includes(item._id));
+            render();
+            $("#batchDelete").hide();
+          },
+          error() {
+            alert("分类删除失败！")
+          }
+        });
+      }
+    });
+
 
     //渲染分类列表
     function render() {
