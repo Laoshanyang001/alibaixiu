@@ -14,6 +14,7 @@ const unlink = promisify(fs.unlink);
 module.exports = async (req, res) => {
 	// 获取用户id
 	const id = req.params['id'];
+
 	// 验证模型
 	const schema = Joi.string().required().regex(/^[0-9a-fA-F]{24}$/).error(new Error('用户id不符合格式'))
 	// 如果id中存在-
@@ -21,6 +22,7 @@ module.exports = async (req, res) => {
 		// 批量删除
 		// 将字符串id分割为数组
 		const ids = id.split('-');
+		
 		// 存储结果数组
 		const result = [];
 		// 验证
@@ -39,7 +41,7 @@ module.exports = async (req, res) => {
 			// 如果缩略图存在
 			if (user.avatar) {
 				// 删除缩略图
-				await unlink(path.join(__dirname, '../', '../', 'public', 'uploads', user.avatar));
+				await unlink(path.join(__dirname, '../', '../', '../', 'public', user.avatar));
 			}
 		}
 		// 响应
