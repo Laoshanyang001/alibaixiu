@@ -426,7 +426,7 @@
     });
     $("#modifyForm").on("change","#avatar",function() {
       let formDate=new FormData();
-      forDate.append("avater",this.files[0]);
+      formDate.append("avater",this.files[0]);
       $.ajax({
         type:"post",
         url:"/upload",

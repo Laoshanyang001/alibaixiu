@@ -11,6 +11,7 @@ module.exports = async (req, res) => {
 		const _id = req.session.userInfo._id;
 		// 获取新密码以及确认密码
 		const { userPass, newPass, confirmPass } = req.fields;
+		
 		// 如果用户输入的密码和原始密码一致
 		if (await bcrypt.compare(userPass, originPass)) {
 			// 如果用户输入的两次密码相同

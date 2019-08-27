@@ -4,6 +4,14 @@ const Joi = require('joi');
 const { User, validateUser } = require('../../../model/User');
 // 工具
 const _ = require('lodash');
+// 路径处理
+const path = require('path');
+// 方法改造
+const { promisify } = require('util');
+// 文件模块
+const fs = require('fs');
+// 删除文件
+const unlink = promisify(fs.unlink);
 
 module.exports = async (req, res) => {
 	// 将密码、邮箱字段抛除
@@ -20,6 +28,11 @@ module.exports = async (req, res) => {
 	});
 	// 数据格式没有通过验证
 	if (error) return res.status(400).send({message: error.message});
+	const userOld = await User.findById(req.fields._id);
+	if (userOld.avatar) {
+		// 删除缩略图
+		await unlink(path.join(__dirname, '../', '../', '../', 'public', userOld.avatar));
+	}
 	// 通过验证
 	// 更新用户信息
 	// new: true 返回修改后的文档 默认值为false 返回原始文档

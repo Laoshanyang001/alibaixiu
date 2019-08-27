@@ -30,16 +30,7 @@
       </ul>
     </nav>
     <div class="container-fluid">
-      <div class="page-title">
-        <h1>我的个人资料</h1>
-      </div>
-      <!-- 有错误信息时展示 -->
-      <!-- <div class="alert alert-danger">
-        <strong>错误！</strong>发生XXX错误
-      </div> -->
-      <form class="form-horizontal" id="userInfoForm">
-        
-      </form>
+
     </div>
   </div>
 
@@ -84,38 +75,48 @@
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
   <script src="../assets/vendors/art-template/template-web.js"></script>
   <script type="text/html" id="userInfoTpl">
-    <div class="form-group">
-          <label class="col-sm-3 control-label">头像</label>
-          <div class="col-sm-6">
-            <label class="form-image">
-              <input id="avatar" type="file">
-              <img src={{userInfo.avatar?userInfo.avatar:"../assets/img/default.png"}}>
-              <i class="mask fa fa-upload"></i>
-              <input id="hiddenAvater" type="hidden" name="avatar" value="{{userInfo.avatar}}">
-            </label>
-          </div>
+    <div class="page-title">
+      <h1>我的个人资料</h1>
+    </div>
+    <!-- 有错误信息时展示 -->
+    <!-- <div class="alert alert-danger">
+        <strong>错误！</strong>发生XXX错误
+      </div> -->
+    <form class="form-horizontal" id="userInfoForm" data-id="{{@userInfo._id}}">
+      <div class="form-group">
+        <label class="col-sm-3 control-label">头像</label>
+        <div class="col-sm-6">
+          <label class="form-image">
+            <input id="avatar" type="file">
+            <img id="preview" src={{userInfo.avatar?userInfo.avatar:"../assets/img/default.png"}}>
+            <i class="mask fa fa-upload"></i>
+            <input id="hiddenAvater" type="hidden" name="avatar" value="{{userInfo.avatar}}">
+          </label>
         </div>
-        <div class="form-group">
-          <label for="email" class="col-sm-3 control-label">邮箱</label>
-          <div class="col-sm-6">
-            <input id="email" class="form-control" name="email" type="type" value="{{userInfo.email}}" placeholder="邮箱"
-              readonly>
-            <p class="help-block">登录邮箱不允许修改</p>
-          </div>
+      </div>
+      <div class="form-group">
+        <label for="email" class="col-sm-3 control-label">邮箱</label>
+        <div class="col-sm-6">
+          <input id="email" class="form-control" name="email" type="type" value="{{userInfo.email}}" placeholder="邮箱"
+            readonly>
+          <p class="help-block">登录邮箱不允许修改</p>
         </div>
-        <div class="form-group">
-          <label for="nickname" class="col-sm-3 control-label">昵称</label>
-          <div class="col-sm-6">
-            <input id="nickName" class="form-control" name="nickName" type="type" value="{{userInfo.nickName}}" placeholder="昵称">
-            <p class="help-block">限制在 2-16 个字符</p>
-          </div>
+      </div>
+      <div class="form-group">
+        <label for="nickname" class="col-sm-3 control-label">昵称</label>
+        <div class="col-sm-6">
+          <input id="nickName" class="form-control" name="nickName" type="type" value="{{userInfo.nickName}}"
+            placeholder="昵称">
+          <p class="help-block">限制在 2-16 个字符</p>
         </div>
-        <div class="form-group">
-          <div class="col-sm-offset-3 col-sm-6">
-            <button type="submit" class="btn btn-primary">更新</button>
-            <a class="btn btn-link" href="password-reset.html">修改密码</a>
-          </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-offset-3 col-sm-6">
+          <button type="submit" class="btn btn-primary">更新</button>
+          <a class="btn btn-link" href="password-reset.html">修改密码</a>
         </div>
+      </div>
+    </form>
   </script>
   <script src="../assets/js/common.js"></script>
   <script>
@@ -130,14 +131,45 @@
           $("#avatarUserInfo").attr("src", data.avatar);
         }
         $(".name").text(data.nickName);
-        let html=template("userInfoTpl",{
-          userInfo:data
+        let html = template("userInfoTpl", {
+          userInfo: data
         });
-        $("#userInfoForm").html(html);
+        $(".container-fluid").html(html);
       }
     });
 
     //更新用户信息
+    $(".container-fluid").on("submit", "#userInfoForm", function () {
+      let formData = $(this).serialize();
+      let id = $(this).attr("data-id");
+      $.ajax({
+        type: "put",
+        url: "/users/" + id,
+        data: formData,
+        success(data) {
+          location.href = "/admin/index.html";
+        },
+        error() {
+          alert("用户更新失败！");
+        }
+      });
+    });
+    //图片上传
+    $(".container-fluid").on("change", "#avatar", function () {
+      let formData = new FormData();
+      formData.append("avatar", this.files[0]); 
+      $.ajax({
+        type: "post",
+        url: "/upload",
+        data: formData,
+        processData:false,
+        contentType:false,
+        success(data) {
+          $("#preview").attr("src", data[0].avatar);
+          $("#hiddenAvater").val(data[0].avatar);
+        }
+      });
+    });
   </script>
 </body>
 
