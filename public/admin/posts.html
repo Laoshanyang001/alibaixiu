@@ -120,8 +120,8 @@
       <td class="text-center">{{$imports.dateFormat($value.createAt)}}</td>
       <td class="text-center">{{$value.state==1?"已发布":"草稿"}}</td>
       <td class="text-center">
-        <a href="javascript:;" class="btn btn-default btn-xs">编辑</a>
-        <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
+        <a id="ariticleEdit" data-id={{$value._id}} href="javascript:;" class="btn btn-default btn-xs">编辑</a>
+        <a id="ariticleDelete" data-id={{$value._id}} href="javascript:;" class="btn btn-danger btn-xs">删除</a>
       </td>
     </tr>
     {{/each}}
@@ -165,20 +165,23 @@
     });
 
     //展示文章列表页面
-    $.ajax({
-      url: "/posts",
-      success(data) {
-        articles = data.records;
-        render();
-        let html = template("paginationTpl", {
-          page: data.page,
-          pages: data.pages,
-          display: data.display
-        });
-        $("#pagination").html(html);
-        $("#pagination a").eq(data.page).addClass("current");
-      }
-    });
+    articleList();
+    function articleList() {
+      $.ajax({
+        url: "/posts",
+        success(data) {
+          articles = data.records;
+          render();
+          let html = template("paginationTpl", {
+            page: data.page,
+            pages: data.pages,
+            display: data.display
+          });
+          $("#pagination").html(html);
+          $("#pagination a").eq(data.page).addClass("current");
+        }
+      });
+    }
 
     //文章筛选显示
     $("#filtrateForm").on("submit", function () {
@@ -201,23 +204,34 @@
         url: "/posts",
         data: {
           page,
-          category:$("#categorySelect").val(),
-          state:$("#articleState").val()
+          category: $("#categorySelect").val(),
+          state: $("#articleState").val()
         },
         success(data) {
           articles = data.records;
           render();
-          let html = template("paginationTpl", {
-            page: data.page,
-            pages: data.pages,
-            display: data.display
-          });
-          $("#pagination").html(html);
-          $("#pagination a").eq(data.page).addClass("current").parent().siblings().children().removeClass(
-            "current");
+          paginationRender(data);
         }
       });
     }
+
+    //文章删除
+    $("tbody").on("click", "#ariticleDelete", function () {
+      let isConfirm = confirm("您确定彻底删除此文章？");
+      if (isConfirm) {
+        let id = $(this).attr("data-id");
+        $.ajax({
+          type: "delete",
+          url: "/posts/" + id,
+          success(data) {
+            articleList();
+          },
+          error() {
+            alert("文章删除失败！")
+          }
+        });
+      }
+    });
 
     //渲染文章列表
     function render() {
