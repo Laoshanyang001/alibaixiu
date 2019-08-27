@@ -1,3 +1,6 @@
+.current {
+  background-color: #ccc!important;
+}
 .nprogress-busy {
   cursor: wait;
 }
