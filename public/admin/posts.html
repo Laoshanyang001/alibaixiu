@@ -27,7 +27,7 @@
       <button class="btn btn-default navbar-btn fa fa-bars"></button>
       <ul class="nav navbar-nav navbar-right">
         <li><a href="profile.html"><i class="fa fa-user"></i>个人中心</a></li>
-        <li><a href="login.html"><i class="fa fa-sign-out"></i>退出</a></li>
+        <li><a href="javascript:;" id="logout"><i class="fa fa-sign-out"></i>退出</a></li>
       </ul>
     </nav>
     <div class="container-fluid">
@@ -72,7 +72,7 @@
 
   <div class="aside">
     <div class="profile">
-      <img class="avatar" src="../uploads/avatar.jpg">
+      <img id="avatarUserInfo" class="avatar" src="../uploads/avatar.jpg">
       <h3 class="name">Coder</h3>
     </div>
     <ul class="nav">
@@ -139,13 +139,67 @@
     <li><a style="background-color:#eee" href="#">上一页</a></li>
     {{/if}}
     {{each display}}
-    <li><a onclick="changePage({{$value}})" href="#">{{$value}}</a></li>
+    <li class={{page==$value?"active":""}}><a onclick="changePage({{$value}})" href="#">{{$value}}</a></li>
     {{/each}}
     {{if page<pages}}
     <li><a onclick="changePage({{page+1}})" href="#">下一页</a></li>
     {{else}}
     <li><a style="background-color:#eee" href="#">下一页</a></li>
     {{/if}}
+  </script>
+  <script type="text/html" id="articleEditTpl">
+    <div class="container-fluid">
+      <div class="page-title">
+        <h1>写文章</h1>
+      </div>
+      <!-- 有错误信息时展示 -->
+      <!-- <div class="alert alert-danger">
+        <strong>错误！</strong>发生XXX错误
+      </div> -->
+      <form class="row" id="articleForm">
+        <div class="col-md-9">
+          <div class="form-group">
+            <label for="title">标题</label>
+            <input id="title" class="form-control input-lg" name="title" type="text" placeholder="文章标题">
+          </div>
+          <div class="form-group">
+            <label for="content">标题</label>
+            <textarea id="content" class="form-control input-lg" name="content" cols="30" rows="10" placeholder="内容"></textarea>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="feature">文章封面</label>
+            <!-- show when image chose -->
+            <img id="articleCover" class="help-block thumbnail" style="display: none">
+            <input id="feature" class="form-control" type="file">
+            <input id="thumbnail" type="hidden" name="thumbnail">
+          </div>
+          <div class="form-group">
+            <label for="category">所属分类</label>
+            <select id="category" class="form-control" name="category">
+              <option value="1">未分类</option>
+              <option value="2">潮生活</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="created">发布时间</label>
+            <input id="created" class="form-control" name="created" type="datetime-local">
+          </div>
+          <div class="form-group">
+            <label for="status">状态</label>
+            <select id="status" class="form-control" name="state">
+              <option value="0">草稿</option>
+              <option value="1">已发布</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button class="btn btn-primary" type="submit">保存</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
   </script>
   <script>
     NProgress.done()
@@ -166,6 +220,7 @@
 
     //展示文章列表页面
     articleList();
+
     function articleList() {
       $.ajax({
         url: "/posts",
@@ -178,7 +233,6 @@
             display: data.display
           });
           $("#pagination").html(html);
-          $("#pagination a").eq(data.page).addClass("current");
         }
       });
     }
@@ -233,6 +287,20 @@
       }
     });
 
+    //文章编辑修改
+    $("tbody").on("click", "#ariticleEdit", function () {
+      let id = $(this).attr("data-id");
+      $.ajax({
+        url: "/posts/" + id,
+        success(data) {
+          
+        },
+        error() {
+          alert("文章删除失败！")
+        }
+      });
+    });
+
     //渲染文章列表
     function render() {
       let html = template("articleListTpl", {
@@ -248,8 +316,6 @@
         display: data.display
       });
       $("#pagination").html(html);
-      $("#pagination a").eq(data.page).addClass("current").parent().siblings().children().removeClass(
-        "current");
     }
 
     //格式化模板时间
