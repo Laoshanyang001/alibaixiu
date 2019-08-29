@@ -148,58 +148,96 @@
     {{/if}}
   </script>
   <script type="text/html" id="articleEditTpl">
-    <div class="container-fluid">
-      <div class="page-title">
-        <h1>写文章</h1>
-      </div>
-      <!-- 有错误信息时展示 -->
-      <!-- <div class="alert alert-danger">
+    <div class="page-title">
+      <h1>修改文章</h1>
+    </div>
+    <!-- 有错误信息时展示 -->
+    <!-- <div class="alert alert-danger">
         <strong>错误！</strong>发生XXX错误
       </div> -->
-      <form class="row" id="articleForm">
-        <div class="col-md-9">
-          <div class="form-group">
-            <label for="title">标题</label>
-            <input id="title" class="form-control input-lg" name="title" type="text" placeholder="文章标题">
-          </div>
-          <div class="form-group">
-            <label for="content">标题</label>
-            <textarea id="content" class="form-control input-lg" name="content" cols="30" rows="10" placeholder="内容"></textarea>
-          </div>
+    <form class="row" id="articleForm" data-id="{{@article._id}}">
+      <div class="col-md-9">
+        <div class="form-group">
+          <label for="title">标题</label>
+          <input value="{{article.title}}" id="title" class="form-control input-lg" name="title" type="text"
+            placeholder="文章标题">
         </div>
-        <div class="col-md-3">
-          <div class="form-group">
-            <label for="feature">文章封面</label>
-            <!-- show when image chose -->
-            <img id="articleCover" class="help-block thumbnail" style="display: none">
-            <input id="feature" class="form-control" type="file">
-            <input id="thumbnail" type="hidden" name="thumbnail">
-          </div>
-          <div class="form-group">
-            <label for="category">所属分类</label>
-            <select id="category" class="form-control" name="category">
-              <option value="1">未分类</option>
-              <option value="2">潮生活</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="created">发布时间</label>
-            <input id="created" class="form-control" name="created" type="datetime-local">
-          </div>
-          <div class="form-group">
-            <label for="status">状态</label>
-            <select id="status" class="form-control" name="state">
-              <option value="0">草稿</option>
-              <option value="1">已发布</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <button class="btn btn-primary" type="submit">保存</button>
-          </div>
+        <div class="form-group">
+          <label for="content">标题</label>
+          <textarea id="content" class="form-control input-lg" name="content" cols="30" rows="10"
+            placeholder="内容">{{article.content}}</textarea>
         </div>
-      </form>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label for="feature">文章封面</label>
+          <!-- show when image chose -->
+          <img id="articleCover" class="help-block thumbnail" style="display:{{article.thumbnail?'inline':'none'}}"
+            src="{{article.thumbnail}}">
+          <input id="feature" class="form-control" type="file">
+          <input id="thumbnail" type="hidden" name="thumbnail" value="{{article.thumbnail?article.thumbnail:""}}">
+        </div>
+        <div class="form-group">
+          <label for="category">所属分类</label>
+          <select id="category" class="form-control" name="category" data-value="{{article.category}}">
+            <option value="1">未分类</option>
+            <option value="2">潮生活</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="created">修改时间</label>
+          <input id="created" class="form-control" name="updateAt" type="date">
+        </div>
+        <div class="form-group">
+          <label for="status">状态</label>
+          <select id="status" class="form-control" name="state" data-value="{{article.state}}">
+            <option value="0">草稿</option>
+            <option value="1">已发布</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" type="submit">修改</button>
+        </div>
+      </div>
+    </form>
+  </script>
+  <script type="text/html" id="articleAllTpl">
+    <div class="page-title">
+      <h1>所有文章</h1>
+      <a href="post-add.html" class="btn btn-primary btn-xs">写文章</a>
     </div>
-  </div>
+    <div class="page-action">
+      <!-- show when multiple checked -->
+      <a class="btn btn-danger btn-sm" href="javascript:;" style="display: none">批量删除</a>
+      <form class="form-inline" id="filtrateForm">
+        <select id="categorySelect" name="category" class="form-control input-sm">
+        </select>
+        <select id="articleState" name="state" class="form-control input-sm">
+          <option value="">所有状态</option>
+          <option value="0">草稿</option>
+          <option value="1">已发布</option>
+        </select>
+        <button class="btn btn-default btn-sm">筛选</button>
+      </form>
+      <ul id="pagination" class="pagination pagination-sm pull-right">
+
+      </ul>
+    </div>
+    <table class="table table-striped table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>标题</th>
+          <th>作者</th>
+          <th>分类</th>
+          <th class="text-center">发表时间</th>
+          <th class="text-center">状态</th>
+          <th class="text-center" width="100">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+
+      </tbody>
+    </table>
   </script>
   <script>
     NProgress.done()
@@ -208,15 +246,18 @@
     let articles = [];
 
     //分类选择框数据展示
-    $.ajax({
-      url: "/categories",
-      success(data) {
-        let html = template("categoryTpl", {
-          categories: data
-        })
-        $("#categorySelect").html(html);
-      }
-    });
+    categorySelect();
+    function categorySelect() {
+      $.ajax({
+        url: "/categories",
+        success(data) {
+          let html = template("categoryTpl", {
+            categories: data
+          })
+          $("#categorySelect").html(html);
+        }
+      });
+    }
 
     //展示文章列表页面
     articleList();
@@ -238,7 +279,7 @@
     }
 
     //文章筛选显示
-    $("#filtrateForm").on("submit", function () {
+    $(".container-fluid").on("submit","#filtrateForm", function () {
       let formData = $(this).serialize();
       $.ajax({
         url: "/posts",
@@ -270,7 +311,7 @@
     }
 
     //文章删除
-    $("tbody").on("click", "#ariticleDelete", function () {
+    $(".container-fluid").on("click", "#ariticleDelete", function () {
       let isConfirm = confirm("您确定彻底删除此文章？");
       if (isConfirm) {
         let id = $(this).attr("data-id");
@@ -288,15 +329,68 @@
     });
 
     //文章编辑修改
-    $("tbody").on("click", "#ariticleEdit", function () {
+    $(".container-fluid").on("click", "#ariticleEdit", function () {
       let id = $(this).attr("data-id");
       $.ajax({
         url: "/posts/" + id,
         success(data) {
-          
+          let html = template("articleEditTpl", {
+            article: data
+          });
+          $(".container-fluid").html(html);
+          $.ajax({
+            url: "/categories",
+            success(data) {
+              let html = template("categoryTpl", {
+                categories: data
+              });
+              $("#category").html(html);
+              $("#category").children().each(function (i, item) {
+                if ($(item).val() == $("#category").attr("data-value")) {
+                  $(item).prop("selected", true);
+                }
+              });
+              $("#status").children().each(function (i, item) {
+                if ($(item).val() == $("#status").attr("data-value")) {
+                  $(item).prop("selected", true);
+                }
+              });
+            }
+          });
         },
         error() {
           alert("文章删除失败！")
+        }
+      });
+    });
+    $(".container-fluid").on("submit", "#articleForm", function () {
+      let formData = $(this).serialize();
+      let id = $(this).attr("data-id");
+      $.ajax({
+        type: "put",
+        url: "/posts/" + id,
+        data: formData,
+        success(data) {
+          let html = template("articleAllTpl", {});
+          $(".container-fluid").html(html);
+          categorySelect();
+          articleList();
+        }
+      });
+      return false;
+    });
+    $(".container-fluid").on("change", "#feature", function () {
+      let formData = new FormData();
+      formData.append("cover", this.files[0]);
+      $.ajax({
+        type: "post",
+        url: "/upload",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success(data) {
+          $("#articleCover").show().attr("src", data[0].cover);
+          $("#thumbnail").val(data[0].cover);
         }
       });
     });

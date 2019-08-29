@@ -62,7 +62,7 @@
           </div>
           <div class="form-group">
             <label for="created">发布时间</label>
-            <input id="created" class="form-control" name="created" type="datetime-local">
+            <input id="created" class="form-control" name="createdAt" type="date">
           </div>
           <div class="form-group">
             <label for="status">状态</label>
@@ -121,6 +121,7 @@
   <script src="../assets/js/common.js"></script>
   <script src="../assets/vendors/art-template/template-web.js"></script>
   <script type="text/html" id="categoriesTpl">
+    <option value="">所有分类</option>
     {{each categories}}
     <option value="{{@$value._id}}">{{$value.title}}</option>
     {{/each}}
