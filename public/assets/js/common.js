@@ -1,3 +1,4 @@
+//退出功能
 $("#logout").on("click", function () {
     let isConfirm = confirm("您确定要退出登录？");
     console.log(isConfirm);
@@ -16,6 +17,7 @@ $("#logout").on("click", function () {
     }
 });
 
+//登录用户显示功能
 $.ajax({
     url:"/users/"+userId,
     success(data) {
@@ -25,3 +27,9 @@ $.ajax({
         $(".name").text(data.nickName);
     }
 });
+
+//格式化模板时间
+function dateFormat(date) {
+  return date.substr(0, 4) + "/" + date.substr(5, 2) + "/" + date.substr(8, 2);
+}
+template.defaults.exports.dateFormat = dateFormat;

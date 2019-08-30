@@ -1,11 +1,12 @@
 <script src="/login/status"></script>
 <script>
-  if(!isLogin) {
-    location.href="/admin/login.html";
+  if (!isLogin) {
+    location.href = "/admin/login.html";
   }
 </script>
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="utf-8">
   <title>Comments &laquo; Admin</title>
@@ -15,8 +16,11 @@
   <link rel="stylesheet" href="../assets/css/admin.css">
   <script src="../assets/vendors/nprogress/nprogress.js"></script>
 </head>
+
 <body>
-  <script>NProgress.start()</script>
+  <script>
+    NProgress.start()
+  </script>
 
   <div class="main">
     <nav class="navbar">
@@ -51,39 +55,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr class="danger">
-            <td>大大</td>
-            <td>楼主好人，顶一个</td>
-            <td>《Hello world》</td>
-            <td>2026/10/07</td>
-            <td>未批准</td>
-            <td class="text-center">
-              <a href="post-add.html" class="btn btn-info btn-xs">批准</a>
-              <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr>
-          <tr>
-            <td>大大</td>
-            <td>楼主好人，顶一个</td>
-            <td>《Hello world》</td>
-            <td>2026/10/07</td>
-            <td>已批准</td>
-            <td class="text-center">
-              <a href="post-add.html" class="btn btn-warning btn-xs">驳回</a>
-              <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr>
-          <tr>
-            <td>大大</td>
-            <td>楼主好人，顶一个</td>
-            <td>《Hello world》</td>
-            <td>2026/10/07</td>
-            <td>已批准</td>
-            <td class="text-center">
-              <a href="post-add.html" class="btn btn-warning btn-xs">驳回</a>
-              <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr>
+
         </tbody>
       </table>
     </div>
@@ -128,7 +100,36 @@
 
   <script src="../assets/vendors/jquery/jquery.js"></script>
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
+  <script src="../assets/vendors/art-template/template-web.js"></script>
   <script src="../assets/js/common.js"></script>
-  <script>NProgress.done()</script>
+  <script type="text/html" id="commentsTpl">
+    {{each records}}
+    <tr class="danger">
+      <td>{{$value.author.nickName}}</td>
+      <td>{{$value.content}}</td>
+      <td>{{$value.post.title}}</td>
+      <td>{{$imports.dateFormat($value.createAt)}}</td>
+      <td>{{$value.state==0?"未批准":"批准"}}</td>
+      <td class="text-center">
+        <a href="post-add.html" data-id="{{@$value._id}}" class="btn btn-info btn-xs">批准</a>
+        <a href="javascript:;" data-id="{{@$value._id}}" class="btn btn-danger btn-xs">删除</a>
+      </td>
+    </tr>
+    {{/each}}
+  </script>
+  <script>
+    NProgress.done()
+  </script>
+  <script>
+    //显示评论列表显示
+    $.ajax({
+      url:"/comments",
+      success(data) {
+        let html=template("commentsTpl",data);
+        $("tbody").html(html);
+      }
+    });
+  </script>
 </body>
+
 </html>

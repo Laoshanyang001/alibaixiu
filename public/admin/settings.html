@@ -88,41 +88,45 @@
       <div class="form-group">
         <label for="site_logo" class="col-sm-2 control-label">网站图标</label>
         <div class="col-sm-6">
-          <input id="site_logo" name="site_logo" type="hidden">
           <label class="form-image">
             <input id="logo" type="file">
-            <img src="{{logo?logo:../assets/img/logo.png}}">
+            <img id="preview" src={{logo?logo:"../assets/img/logo.png"}} style="background-color:#FF5E52">
             <i class="mask fa fa-upload"></i>
+            <input id="logoHidden" type="hidden" name="logo" value="{{logo?logo:""}}">
           </label>
         </div>
       </div>
       <div class="form-group">
         <label for="site_name" class="col-sm-2 control-label">站点名称</label>
         <div class="col-sm-6">
-          <input id="site_name" value="{{title?titel:""}}" name="title" class="form-control" type="type" placeholder="站点名称">
+          <input id="site_name" value="{{title?title:""}}" name="title" class="form-control" type="type"
+            placeholder="站点名称">
         </div>
       </div>
       <div class="form-group">
         <label for="site_description" class="col-sm-2 control-label">站点描述</label>
         <div class="col-sm-6">
           <textarea id="site_description" name="description" class="form-control" placeholder="站点描述" cols="30"
-            rows="6">{{description?description:""}}"</textarea>
+            rows="6">{{description?description:""}}</textarea>
         </div>
       </div>
       <div class="form-group">
         <label for="site_keywords" class="col-sm-2 control-label">站点关键词</label>
         <div class="col-sm-6">
-          <input id="site_keywords" value="{{keywords?keywords:""}}" name="keywords" class="form-control" type="type" placeholder="站点关键词">
+          <input id="site_keywords" value="{{keywords?keywords:""}}" name="keywords" class="form-control" type="type"
+            placeholder="站点关键词">
         </div>
       </div>
       <div class="form-group">
         <label class="col-sm-2 control-label">评论</label>
         <div class="col-sm-6">
           <div class="checkbox">
-            <label><input id="comment_status" name="comment" type="checkbox" {{comment?(comment==true?checked:""):""}}>开启评论功能</label>
+            <label><input id="comment_status" name="comment" type="checkbox" value="{{comment}}"
+                {{comment&&comment?checked="checked":""}}>开启评论功能</label>
           </div>
           <div class="checkbox">
-            <label><input id="comment_reviewed" name="review" type="checkbox" {{review?(review==true?checked:""):""}}>评论必须经人工批准</label>
+            <label><input id="comment_reviewed" name="review" type="checkbox" value="{{review}}"
+                {{review&&review?checked="checked":""}}>评论必须经人工批准</label>
           </div>
         </div>
       </div>
@@ -137,25 +141,60 @@
     NProgress.done()
   </script>
   <script>
-    let settings;
+    //网站设置数据内容显示
     $.ajax({
       url: "/settings",
       success(data) {
         if (data) {
-          let html=template("settingsTpl",data);
+          let html = template("settingsTpl", data);
           $(".container-fluid").html(html);
-        }else {
-          let html=template("settingsTpl",{});
+        } else {
+          let html = template("settingsTpl", {});
           $(".container-fluid").html(html);
         }
       }
     });
+
+    //网站设置数据内容修改
     $(".container-fluid").on("submit", "#settingsForm", function () {
+      if($("#comment_status").prop("checked")) {
+        $("#comment_status").val(true)
+      }
+      if (!$("#comment_reviewed").prop("checked")) {
+        $("#comment_reviewed").val(true);
+      }
+      let formData = $(this).serialize();
+      if (!$("#comment_status").prop("checked")) {
+        formData += "&comment=" + false;
+      }
+      if (!$("#comment_reviewed").prop("checked")) {
+        formData += "&reviewe=" + false;
+      }
+      console.log(formData);
 
       $.ajax({
         type: "post",
         url: "/settings",
-        data:
+        data: formData,
+        success(data) {
+          location.href = "/admin/index.html";
+        }
+      });
+      return false;
+    });
+    $(".container-fluid").on("change", "#logo", function () {
+      let formData = new FormData();
+      formData.append("logo", this.files[0]);
+      $.ajax({
+        type: "post",
+        url: "/upload",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success(data) {
+          $("#preview").attr("src", data[0].logo);
+          $("#logoHidden").val(data[0].logo);
+        }
       });
     });
   </script>

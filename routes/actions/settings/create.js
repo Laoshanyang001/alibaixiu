@@ -9,6 +9,7 @@ module.exports = async (req, res) => {
 	// 清除现有设置
 	await Setting.deleteMany({});
 	// 创建轮播图
+	
 	let settings = new Setting(req.fields);
 	// 保存用户
 	await settings.save();
