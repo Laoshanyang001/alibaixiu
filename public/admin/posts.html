@@ -111,6 +111,7 @@
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
   <script src="../assets/js/common.js"></script>
   <script src="../assets/vendors/art-template/template-web.js"></script>
+  <!-- 文章列表模板 -->
   <script type="text/html" id="articleListTpl">
     {{each articles}}
     <tr>
@@ -126,12 +127,14 @@
     </tr>
     {{/each}}
   </script>
+  <!-- 文章分类模板 -->
   <script type="text/html" id="categoryTpl">
     <option value="">所有分类</option>
     {{each categories}}
     <option value="{{@$value._id}}">{{$value.title}}</option>
     {{/each}}
   </script>
+  <!-- 文章分页模板 -->
   <script type="text/html" id="paginationTpl">
     {{if page>1}}
     <li><a onclick="changePage({{page-1}})" href="#">上一页</a></li>
@@ -147,6 +150,7 @@
     <li><a style="background-color:#eee" href="#">下一页</a></li>
     {{/if}}
   </script>
+  <!-- 修改文章模板 -->
   <script type="text/html" id="articleEditTpl">
     <div class="page-title">
       <h1>修改文章</h1>
@@ -179,7 +183,7 @@
         </div>
         <div class="form-group">
           <label for="category">所属分类</label>
-          <select id="category" class="form-control" name="category" data-value="{{article.category}}">
+          <select id="category" class="form-control" name="category" data-value="{{article.category._id}}">
             <option value="1">未分类</option>
             <option value="2">潮生活</option>
           </select>
@@ -201,6 +205,7 @@
       </div>
     </form>
   </script>
+  <!-- 文章页面模板 -->
   <script type="text/html" id="articleAllTpl">
     <div class="page-title">
       <h1>所有文章</h1>
@@ -359,7 +364,7 @@
           });
         },
         error() {
-          alert("文章删除失败！")
+          alert("文章修改失败！")
         }
       });
     });

@@ -1009,12 +1009,26 @@ img {
   clear: both;
 }
 
-.content .entry .thumb {
+.content .entry .thumb,
+#articleBox .thumb{
   display: inline-block;
   width: 20%;
   margin-left: 5%;
   position: relative;
   overflow: hidden;
+}
+#articleBox {
+  position: relative;
+  height: 200px;
+}
+#articleBox p {
+  height: 80px;
+}
+#articleBox .thumb {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .content .entry .thumb:after {

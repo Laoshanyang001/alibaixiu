@@ -19,3 +19,36 @@ $.ajax({
     }
     return null;
 }
+
+//随机推荐渲染
+$.ajax({
+    url:"/posts/random",
+    success(data) {
+        let html=template("randomRecommendTpl",{
+            data
+        });
+        $("#randomRecommend").html(html);
+    }
+});
+
+//最新评论渲染
+$.ajax({
+    url:"/comments/lasted",
+    success(data) {
+        let html=template("newCommentsTpl",{
+            data
+        });
+        $("#newComments").html(html);
+    }
+});
+
+// 热门推荐渲染
+$.ajax({
+    url:"/posts/recommend",
+    success(data) {
+        let html=template("hotRecommendTpl",{
+            data
+        });
+        $(".hots").html(html);
+    }
+});

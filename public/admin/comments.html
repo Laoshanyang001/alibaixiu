@@ -36,11 +36,7 @@
       </div>
       <div class="page-action">
         <ul class="pagination pagination-sm pull-right">
-          <li><a href="#">上一页</a></li>
-          <li><a href="#">1</a></li>
-          <li><a href="#">2</a></li>
-          <li><a href="#">3</a></li>
-          <li><a href="#">下一页</a></li>
+
         </ul>
       </div>
       <table class="table table-striped table-bordered table-hover">
@@ -102,6 +98,7 @@
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
   <script src="../assets/vendors/art-template/template-web.js"></script>
   <script src="../assets/js/common.js"></script>
+  <!-- 评论列表模板 -->
   <script type="text/html" id="commentsTpl">
     {{each records}}
     <tr class="danger">
@@ -111,24 +108,101 @@
       <td>{{$imports.dateFormat($value.createAt)}}</td>
       <td>{{$value.state==0?"未批准":"批准"}}</td>
       <td class="text-center">
-        <a href="post-add.html" data-id="{{@$value._id}}" class="btn btn-info btn-xs">批准</a>
-        <a href="javascript:;" data-id="{{@$value._id}}" class="btn btn-danger btn-xs">删除</a>
+        <a href="javascript:;" data-state="{{$value.state}}" id="ratifyComment" data-id="{{@$value._id}}" 
+        class="btn {{$value.state==0?"btn-info":"btn-warning"}} btn-xs">{{$value.state==0?"批准":"撤回"}}</a>
+        <a href="javascript:;" id="deleteComment" data-id="{{@$value._id}}" class="btn btn-danger btn-xs">删除</a>
       </td>
     </tr>
     {{/each}}
+  </script>
+  <!-- 分页模板 -->
+  <script type="text/html" id="paginationTpl">
+    {{if page==1}}
+    <li><a style="background-color:#eee" href="#">上一页</a></li>
+    {{else}}
+    <li><a onclick="changePage({{page-1}})" href="#">上一页</a></li>
+    {{/if}}
+    {{each display}}
+    <li class={{$value==page?"active":""}}><a onclick="changePage({{$value}})" href="#">{{$value}}</a></li>
+    {{/each}}
+    {{if page==pages}}
+    <li><a style="background-color:#eee" href="#">下一页</a></li>
+    {{else}}
+    <li><a onclick="changePage({{page+1}})" href="#">下一页</a></li>
+    {{/if}}
   </script>
   <script>
     NProgress.done()
   </script>
   <script>
     //显示评论列表显示
-    $.ajax({
-      url:"/comments",
-      success(data) {
-        let html=template("commentsTpl",data);
-        $("tbody").html(html);
-      }
+    commentsList();
+    function commentsList() {
+      $.ajax({
+        url: "/comments",
+        success(data) {
+          render(data);
+          paginationRender(data);
+        }
+      });
+    }
+
+    //评论批准
+    $("tbody").on("click","#ratifyComment",function() {
+      let id=$(this).attr("data-id");
+      $(this).text()=="批准"?$(this).attr("data-state",1):$(this).attr("data-state",0);
+      let state=$(this).attr("data-state");
+      $.ajax({
+        type:"put",
+        url:"/comments/"+id,
+        data:{state},
+        success(data) {
+          commentsList();
+        }
+      });
     });
+
+    //删除评论
+    $("tbody").on("click","#deleteComment",function() {
+      let id=$(this).attr("data-id");
+      $.ajax({
+        type:"delete",
+        url:"/comments/"+id,
+        success(data) {
+          commentsList();
+        }
+      });
+    });
+
+    //评论列表分页
+    function changePage(page) {
+      $.ajax({
+        url: "/comments",
+        data: {
+          page
+        },
+        success(data) {
+          render(data);
+          paginationRender(data);
+        }
+      });
+    }
+
+    //分页渲染
+    function paginationRender(data) {
+      let html = template("paginationTpl", {
+        display: data.display,
+        page: data.page,
+        pages: data.pages
+      });
+      $(".pagination").html(html);
+    }
+
+    //评论渲染
+    function render(data) {
+      let html = template("commentsTpl", data);
+      $("tbody").html(html);
+    }
   </script>
 </body>
 

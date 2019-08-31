@@ -1,11 +1,12 @@
 <script src="/login/status"></script>
 <script>
-  if(!isLogin) {
-    location.href="/admin/login.html";
+  if (!isLogin) {
+    location.href = "/admin/login.html";
   }
 </script>
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="utf-8">
   <title>Dashboard &laquo; Admin</title>
@@ -15,8 +16,11 @@
   <link rel="stylesheet" href="../assets/css/admin.css">
   <script src="../assets/vendors/nprogress/nprogress.js"></script>
 </head>
+
 <body>
-  <script>NProgress.start()</script>
+  <script>
+    NProgress.start()
+  </script>
 
   <div class="main">
     <nav class="navbar">
@@ -39,9 +43,11 @@
               <h3 class="panel-title">站点内容统计：</h3>
             </div>
             <ul class="list-group">
-              <li class="list-group-item"><strong>10</strong>篇文章（<strong>2</strong>篇草稿）</li>
-              <li class="list-group-item"><strong>6</strong>个分类</li>
-              <li class="list-group-item"><strong>5</strong>条评论（<strong>1</strong>条待审核）</li>
+              <li class="list-group-item"><strong id="postCount"></strong>篇文章（<strong id="draftCount"></strong>篇草稿）</li>
+              <li class="list-group-item"><strong id="categoryCount"></strong>个分类</li>
+              <li class="list-group-item"><strong id="commentCount"></strong>条评论（<strong
+                  id="unratifiedCount"></strong>条待审核）
+              </li>
             </ul>
           </div>
         </div>
@@ -89,7 +95,41 @@
   </div>
   <script src="../assets/vendors/jquery/jquery.js"></script>
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
-  <script>NProgress.done()</script>
+  <script src="../assets/vendors/art-template/template-web.js"></script>
   <script src="../assets/js/common.js"></script>
+  <script>
+    NProgress.done()
+  </script>
+  <script>
+    //渲染文章数量
+    $.ajax({
+      url: "/posts/count",
+      success(data) {
+        $("#postCount").html(data.postCount);
+        $("#draftCount").html(data.draftCount);
+      }
+    });
+
+    //渲染分类数量
+    $.ajax({
+      url: "/categories/count",
+      success(data) {
+        $("#categoryCount").html(data.categoryCount);
+      }
+    });
+
+    //渲染评论数量
+    $.ajax({
+      url: "/comments/all",
+      success(data) {
+        let commentCount = data.length;
+        let unratifiedComment = data.filter(item => item.state == 0);
+        let unratifiedCount = unratifiedComment.length;
+        $("#commentCount").html(commentCount);
+        $("#unratifiedCount").html(unratifiedCount);
+      }
+    });
+  </script>
 </body>
+
 </html>

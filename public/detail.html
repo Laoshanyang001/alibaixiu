@@ -50,55 +50,8 @@
           </form>
         </div>
       </div>
-      <div class="widgets">
-        <h4>随机推荐</h4>
-        <ul class="body random">
-          <li>
-            <a href="javascript:;">
-              <p class="title">废灯泡的14种玩法 妹子见了都会心动</p>
-              <p class="reading">阅读(819)</p>
-              <div class="pic">
-                <img src="uploads/widget_1.jpg" alt="">
-              </div>
-            </a>
-          </li>
-          <li>
-            <a href="javascript:;">
-              <p class="title">可爱卡通造型 iPhone 6防水手机套</p>
-              <p class="reading">阅读(819)</p>
-              <div class="pic">
-                <img src="uploads/widget_2.jpg" alt="">
-              </div>
-            </a>
-          </li>
-          <li>
-            <a href="javascript:;">
-              <p class="title">变废为宝！将手机旧电池变为充电宝的Better</p>
-              <p class="reading">阅读(819)</p>
-              <div class="pic">
-                <img src="uploads/widget_3.jpg" alt="">
-              </div>
-            </a>
-          </li>
-          <li>
-            <a href="javascript:;">
-              <p class="title">老外偷拍桂林芦笛岩洞 美如“地下彩虹”</p>
-              <p class="reading">阅读(819)</p>
-              <div class="pic">
-                <img src="uploads/widget_4.jpg" alt="">
-              </div>
-            </a>
-          </li>
-          <li>
-            <a href="javascript:;">
-              <p class="title">doge神烦狗打底南瓜裤 就是如此魔性</p>
-              <p class="reading">阅读(819)</p>
-              <div class="pic">
-                <img src="uploads/widget_5.jpg" alt="">
-              </div>
-            </a>
-          </li>
-        </ul>
+      <div class="widgets" id="randomRecommend">
+
       </div>
 
     </div>
@@ -121,33 +74,7 @@
         </ul>
       </div>
       <div class="panel hots">
-        <h3>热门推荐</h3>
-        <ul>
-          <li>
-            <a href="javascript:;">
-              <img src="uploads/hots_2.jpg" alt="">
-              <span>星球大战:原力觉醒视频演示 电影票68</span>
-            </a>
-          </li>
-          <li>
-            <a href="javascript:;">
-              <img src="uploads/hots_3.jpg" alt="">
-              <span>你敢骑吗？全球第一辆全功能3D打印摩托车亮相</span>
-            </a>
-          </li>
-          <li>
-            <a href="javascript:;">
-              <img src="uploads/hots_4.jpg" alt="">
-              <span>又现酒窝夹笔盖新技能 城里人是不让人活了！</span>
-            </a>
-          </li>
-          <li>
-            <a href="javascript:;">
-              <img src="uploads/hots_5.jpg" alt="">
-              <span>实在太邪恶！照亮妹纸绝对领域与私处</span>
-            </a>
-          </li>
-        </ul>
+
       </div>
     </div>
     <div class="footer">
@@ -156,11 +83,15 @@
   </div>
   <script src="assets/vendors/jquery/jquery.js"></script>
   <script src="assets/vendors/art-template/template-web.js"></script>
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/frontDeskCommont.js"></script>
+  <!-- 当前位置模板 -->
   <script type="text/html" id="categoryTpl">
     {{each categories}}
     <li><a href="list.html?id={{$value._id}}"><i class="fa {{$value.className}}"></i>{{$value.title}}</a></li>
     {{/each}}
   </script>
+  <!-- 文章模板 -->
   <script type="text/html" id="articleTpl">
     <div class="breadcrumb">
       <dl>
@@ -175,13 +106,21 @@
     <p class="brief">
       {{article.content}}
     </p>
+    <a href="javascript:;" class="thumb">
+        <img src="{{article.thumbnail?article.thumbnail:""}}" style="display:{{article.thumbnail?"inline":"none"}}">
+      </a>
     <div class="meta">
-      <span>{{article.author.nickName}} 发布于 {{article.updateAt}}</span>
+      <span>{{article.author.nickName}} 发布于 {{$imports.dateFormat(article.createAt)}}</span>
       <span>分类: <a href="javascript:;">{{article.category.title}}</a></span>
       <span>阅读: ({{article.meta.views}})</span>
       <span>评论: ({{article.meta.comments}})</span>
+      <a href="javascript:;" class="like" data-id="{{article._id}}">
+        <i class="fa fa-thumbs-up"></i>
+        <span>赞({{article.meta.likes}})</span>
+      </a>
     </div>
   </script>
+  <!-- 评论模板 -->
   <script type="text/html" id="commentsTpl">
     {{each comments}}
     <li>
@@ -190,15 +129,45 @@
           <img src={{$value.author.avatar?$value.author.avatar:"assets/img/default.png"}} alt="">
         </div>
         <div class="txt">
-          <span>{{$value.author.nickName}} &nbsp&nbsp&nbsp&nbsp {{$value.createAt}} 说:</span>
+          <span>{{$value.author.nickName}} &nbsp&nbsp&nbsp&nbsp {{$imports.dateFormat($value.createAt)}} 说:</span>
           <span>{{$value.content}}</span>
         </div>
       </a>
     </li>
     {{/each}}
   </script>
-  <script src="assets/js/frontDeskCommont.js"></script>
-  <script src="assets/js/detail.js"></script>
+  <!-- 随机推荐模板 -->
+  <script type="text/html" id="randomRecommendTpl">
+    <h4>随机推荐</h4>
+    <ul class="body random">
+      {{each data}}
+      <li>
+        <a href="javascript:;">
+          <p class="title">{{$value.title}}</p>
+          <p class="reading">阅读({{$value.meta.views}})</p>
+          <div class="pic">
+            <img src="{{$value.thumbnail?$value.thumbnail:""}}" alt="">
+          </div>
+        </a>
+      </li>
+      {{/each}}
+    </ul>
+  </script>
+  <!-- 热门推荐模板 -->
+  <script type="text/html" id="hotRecommendTpl">
+    <h3>热门推荐</h3>
+    <ul>
+      {{each data}}
+      <li>
+        <a href="javascript:;">
+          <img src="{{$value.thumbnail?$value.thumbnail:""}}" alt="">
+          <span>{{$value.title}}</span>
+        </a>
+      </li>
+      {{/each}}
+    </ul>
+    <script src="assets/js/detail.js">
+  </script>
 </body>
 
 </html>

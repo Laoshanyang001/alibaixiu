@@ -1,11 +1,12 @@
 <script src="/login/status"></script>
 <script>
-  if(!isLogin) {
-    location.href="/admin/login.html";
+  if (!isLogin) {
+    location.href = "/admin/login.html";
   }
 </script>
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="utf-8">
   <title>Slides &laquo; Admin</title>
@@ -15,8 +16,11 @@
   <link rel="stylesheet" href="../assets/css/admin.css">
   <script src="../assets/vendors/nprogress/nprogress.js"></script>
 </head>
+
 <body>
-  <script>NProgress.start()</script>
+  <script>
+    NProgress.start()
+  </script>
 
   <div class="main">
     <nav class="navbar">
@@ -35,18 +39,19 @@
         <strong>错误！</strong>发生XXX错误
       </div> -->
       <div class="row">
-        <div class="col-md-4">
-          <form>
+        <div class="col-md-4" id="slideFormBox">
+          <form id="slideForm">
             <h2>添加新轮播内容</h2>
             <div class="form-group">
               <label for="image">图片</label>
               <!-- show when image chose -->
-              <img class="help-block thumbnail" style="display: none">
-              <input id="image" class="form-control" name="image" type="file">
+              <img class="help-block thumbnail" style="display: none" id="preview">
+              <input id="image" class="form-control" type="file">
+              <input id="imageHidden" type="hidden" name="image">
             </div>
             <div class="form-group">
-              <label for="text">文本</label>
-              <input id="text" class="form-control" name="text" type="text" placeholder="文本">
+              <label for="text">标题</label>
+              <input id="title" class="form-control" name="title" type="text" placeholder="标题">
             </div>
             <div class="form-group">
               <label for="link">链接</label>
@@ -68,29 +73,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="text-center"><img class="slide" src="../uploads/slide_1.jpg"></td>
-                <td>XIU功能演示</td>
-                <td>#</td>
-                <td class="text-center">
-                  <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-                </td>
-              </tr>
-              <tr>
-                <td class="text-center"><img class="slide" src="../uploads/slide_2.jpg"></td>
-                <td>XIU功能演示</td>
-                <td>#</td>
-                <td class="text-center">
-                  <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-                </td>
-              </tr>
+
             </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
-
   <div class="aside">
     <div class="profile">
       <img id="avatarUserInfo" class="avatar" src="../uploads/avatar.jpg">
@@ -130,7 +119,93 @@
 
   <script src="../assets/vendors/jquery/jquery.js"></script>
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
+  <script src="../assets/vendors/art-template/template-web.js"></script>
   <script src="../assets/js/common.js"></script>
-  <script>NProgress.done()</script>
+  <!-- 轮播图列表模板 -->
+  <script type="text/html" id="slidesTpl">
+    {{each slides}}
+    <tr>
+      <td class="text-center">
+        <img class="slide" src="{{$value.image}}">
+      </td>
+      <td>{{$value.title}}</td>
+      <td>{{$value.link?$value.link:"#"}}</td>
+      <td class="text-center">
+        <a href="javascript:;" data-id="{{$value._id}}" id="deleteSlide" class="btn btn-danger btn-xs"> 删除 </a>
+      </td>
+    </tr>
+    {{/each}}
+  </script>
+  <script>
+    NProgress.done()
+  </script>
+  <script>
+    let slides=[];
+    
+    //轮播图列表展示
+    $.ajax({
+      url:"/slides",
+      success(data) {
+        slides=data.reverse();
+        render();
+      }
+    }); 
+
+    //删除轮播图
+    $("tbody").on("click","#deleteSlide",function() {
+      let id=$(this).attr("data-id");
+      $.ajax({
+        type:"delete",
+        url:"/slides/"+id,
+        success(data) {
+          slides=slides.filter(item=>item._id!=id);
+          render();
+        }
+      });
+    });
+
+    //添加轮播图
+    $("#slideFormBox").on("submit", "#slideForm", function () {
+      let formData = $(this).serialize();
+      $.ajax({
+        type: "post",
+        url: "/slides",
+        data: formData,
+        success(data) {
+          slides.unshift(data);
+          render();
+          $("#title").val("");
+          $("#image").val("");
+          $("#preview").hide().attr("src","");
+        },
+        error() {
+          alert("轮播图添加失败！");
+        }
+      });
+      return false;
+    });
+    $("#slideFormBox").on("change", "#image", function () {
+      let formData = new FormData();
+      formData.append("image", this.files[0]);
+      $.ajax({
+        type: "post",
+        url: "/upload",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success(data) {
+          $("#preview").show().attr("src",data[0].image);
+          $("#imageHidden").val(data[0].image);
+        }
+      });
+    });
+
+    //渲染轮播图列表
+    function render() {
+      let html=template("slidesTpl",{slides});
+      $("tbody").html(html);
+    }
+  </script>
 </body>
+
 </html>
